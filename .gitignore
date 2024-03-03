@@ -1,0 +1,13 @@
+data/
+include/
+Lib/
+Scripts/
+train/
+test/
+val/
+auto_test/
+__pycache__/
+backup/
+share/
+FT_CT_GONARTROZ/
+**.h5
