@@ -10,6 +10,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 
+
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -18,7 +19,7 @@ from fastapi import File, UploadFile
 
 
 @app.post("/predict")
-def predict(file: UploadFile = File(...), debug: bool = False, features: bool=False, brightness: int = 1):
+def predict(file: UploadFile = File(...), debug: bool = Form(...), features: bool=Form(...), brightness: int = Form(...)):
     result = {}
     try:
         contents = file.file.read()
