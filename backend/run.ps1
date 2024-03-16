@@ -1,1 +1,1 @@
-uvicorn main:app --reload
+& "C:/Program Files/Python310/python.exe" -m uvicorn main:app --reload
