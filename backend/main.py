@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request, Depends
 from fastapi.responses import JSONResponse, HTMLResponse
+from json import JSONDecodeError
 import aiofiles
 import os, json
 import numpy as np
@@ -17,9 +18,16 @@ templates = Jinja2Templates(directory="templates")
 
 from fastapi import File, UploadFile
 
+# debug: bool = 0, features: bool=0, brightness: int = 1
+def checker(data: str = Form(...)):
+    try:
+       return json.loads(data)
+    except JSONDecodeError:
+        raise HTTPException(status_code=400, detail='Invalid JSON data')
 
 @app.post("/predict")
-def predict(file: UploadFile = File(...), debug: bool = Form(...), features: bool=Form(...), brightness: int = Form(...)):
+def predict(file: UploadFile, debug: bool = 0, features: bool=0, brightness: int = 1 ):
+    print(file)
     result = {}
     try:
         contents = file.file.read()
@@ -27,6 +35,7 @@ def predict(file: UploadFile = File(...), debug: bool = Form(...), features: boo
             f.write(contents)
         result = utils.predict(file.filename, debug, features, brightness)
     except Exception as e:
+        raise e
         return {"message": f"There was an error uploading the file: {e}"}
     finally:
         file.file.close()

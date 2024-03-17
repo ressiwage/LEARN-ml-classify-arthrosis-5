@@ -10,4 +10,4 @@ __pycache__/
 backup/
 share/
 FT_CT_GONARTROZ/
-**.h5
+/65-relative-success-v1.weights.h5

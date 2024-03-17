@@ -24,14 +24,16 @@
             
             <div class="col-6">
                 <form method="post" id="myform"  action="/predict" method="post">
-                    <input class="mt-3" type="file" accept="image/*" id="file" name="file" onchange="loadFile(event)" style="display:none;"/>
-                    <button>process</button>
-                    <label><input type="checkbox" id="debug">show attention map?</label>
-                    <label><input type="checkbox" id="features">maps</label>
-                    <input type="range" min="1" max="5" value="1"  id="brightness">
+                    <input class="mt-3" type="file" accept="image/*" id="file" name="file" onchange="loadFile(event)" style="display: none;"/>
+                    <button type="submit">process</button>
+                    <label>show attention map? <input type="checkbox" id="debug" checked></label>
+                    <br>
+                    <!-- <label><input type="checkbox" id="features">maps</label> -->
+                    <label>яркость подсветки патологий <input type="range" min="1" max="5" value="1"  id="brightness"></label>
                     
                 </form>
                 <img class="d-block w-75  mx-auto mt-3" id="dest" src=""  />
+                <h1 class="d-block w-75 text-center mx-auto mt-1">result</h1>
                 
             </div>
         </div>
@@ -73,26 +75,36 @@
         }
 
         document.forms['myform'].addEventListener('submit', (event) => {
-            event.preventDefault();
+            event.preventDefault()
+            if(!document.getElementById('file').value){alert('pick a file')}
+            
+            var url = event.target.action+`?debug=${document.getElementById('debug').checked?1:0}&brightness=${document.getElementById('brightness').value}&features=0`;
+            
+            // console.log(newUserData)
             // TODO do something here to show user that form is being submitted
-            fetch(event.target.action, {
+            fetch(url, {
                 method: 'POST',
                 body: new FormData(event.target) // event.target is the form
             }).then((response) => {
                 if (!response.ok) {
+                    console.log(response.text().then(t=>console.log(t)))
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 return response.json(); // or response.text() or whatever the server sends
             }).then((body) => {
                 console.log(body)
                 var image = document.getElementById('dest');
-                image.src = "{{url_for('static', path='output/placeholderrr')}}".replace("placeholderrr", JSON.parse(body)['filenames'][0]);
                 image.classList.add('opened');
+                if (document.getElementById('debug').checked==true){
+                    image.src = "{{url_for('static', path='output/placeholder')}}".replace("placeholder", JSON.parse(body)['filenames'][0]);
+                }
+                document.getElementById('file').value=null
+                
             }).catch((error) => {
                 // TODO handle error
                 console.log(error)
             });
-
+            return false
 
         });
     </script>
