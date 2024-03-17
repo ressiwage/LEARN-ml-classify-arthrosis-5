@@ -34,8 +34,13 @@ button {
     max-height: 0;
     opacity: 0.2;
   }
-
-  
+h1{
+  transition: all .5s;
+  opacity: 1;
+}
+h1:not(.res-showed){
+  opacity: 0;
+}
 
 
 

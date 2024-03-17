@@ -29,11 +29,11 @@
                     <label>show attention map? <input type="checkbox" id="debug" checked></label>
                     <br>
                     <!-- <label><input type="checkbox" id="features">maps</label> -->
-                    <label>яркость подсветки патологий <input type="range" min="1" max="5" value="1"  id="brightness"></label>
+                    <label>patologies highlight brightness <input type="range" min="1" max="10" value="1"  id="brightness"></label>
                     
                 </form>
                 <img class="d-block w-75  mx-auto mt-3" id="dest" src=""  />
-                <h1 class="d-block w-75 text-center mx-auto mt-1">result</h1>
+                <h1 id="result" class="d-block w-75 text-center mx-auto mt-3">result</h1>
                 
             </div>
         </div>
@@ -96,8 +96,10 @@
                 var image = document.getElementById('dest');
                 image.classList.add('opened');
                 if (document.getElementById('debug').checked==true){
-                    image.src = "{{url_for('static', path='output/placeholder')}}".replace("placeholder", JSON.parse(body)['filenames'][0]);
+                    image.src = "{{url_for('static', path='output/placeholder')}}".replace("placeholder", JSON.parse(body)['filenames'][0])+"?"+ new Date().getTime();;
                 }
+                document.getElementById('result').innerHTML=`healthy probability: ${Math.round(JSON.parse(body)['payload'][0][0].toFixed(2)*100)}%<br>minimal probability: ${Math.round(JSON.parse(body)['payload'][0][1].toFixed(2)*100)}%<br>moderate probability: ${Math.round(JSON.parse(body)['payload'][0][2].toFixed(2)*100)}%`
+                document.getElementById('result').classList.add('res-showed')
                 document.getElementById('file').value=null
                 
             }).catch((error) => {

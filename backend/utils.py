@@ -6,7 +6,15 @@ import os, errno
 from matplotlib import pyplot as plt
 import preprocess
 
+import os, errno
 
+def silentremove(filename):
+    return
+    try:
+        os.remove(filename)
+    except OSError as e: # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
+            raise # re-raise exception if a different error occurred
 
 def predict(path, dbg, features, brightness):
     result={}

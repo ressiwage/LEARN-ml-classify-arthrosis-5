@@ -31,7 +31,8 @@ def predict(file: UploadFile, debug: bool = 0, features: bool=0, brightness: int
     result = {}
     try:
         contents = file.file.read()
-        with open(file.filename, "wb+") as f:
+        utils.silentremove(file.filename)
+        with open(file.filename, "w+b") as f:
             f.write(contents)
         result = utils.predict(file.filename, debug, features, brightness)
     except Exception as e:
