@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>курсовая</title>
-    <!-- <link rel="apple-touch-icon" sizes="128x128" href="{{url_for('static', path='fav.ico')}}"> -->
     <link rel="icon" sizes="128x128" type="image/x-icon" href="{{url_for('static', path='fav.ico')}}">
-    
-
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <link href="{{url_for('static', path='stylesheet.css')}}" rel="stylesheet">
@@ -99,9 +95,12 @@
             }).then((body) => {
                 console.log(body)
                 var image = document.getElementById('dest');
-                image.classList.add('opened');
+                
                 if (document.getElementById('debug').checked==true){
                     image.src = "{{url_for('static', path='output/placeholder')}}".replace("placeholder", JSON.parse(body)['filenames'][0])+"?"+ new Date().getTime();;
+                    image.classList.add('opened');
+                }else{
+                    image.classList.remove('opened');
                 }
                 document.getElementById('result').innerHTML=`healthy probability: ${Math.round(JSON.parse(body)['payload'][0][0].toFixed(2)*100)}%<br>minimal probability: ${Math.round(JSON.parse(body)['payload'][0][1].toFixed(2)*100)}%<br>moderate probability: ${Math.round(JSON.parse(body)['payload'][0][2].toFixed(2)*100)}%`
                 document.getElementById('result').classList.add('res-showed')
