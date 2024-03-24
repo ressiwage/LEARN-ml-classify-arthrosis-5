@@ -1,4 +1,4 @@
-# LEARN-ml-classify-arthrosis
+# LEARN-ml-classify-arthrosis-5
 
 Данный проект -- реализация системы классификации стадии артроза по рентген снимку.
 
