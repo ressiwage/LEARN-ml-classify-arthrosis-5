@@ -191,7 +191,7 @@ ___
 
 Рисунок 12 – Анализ точности модели
 
-![asset](images/13.png)
+![asset](images/13.jpg)
 
 Рисунок 13 –Анализ функции потерь
 
@@ -288,431 +288,211 @@ ___
 
 ПРИЛОЖЕНИЕ А
 ~~~python
-1: PATH = '/kaggle/input/kneeoa/'
-
-2: from tensorflow.keras.models import Sequential
-
-3: from tensorflow.keras.layers import Conv2D, MaxPooling2D, Add, GlobalAveragePooling2D, Reshape, DepthwiseConv2D, BatchNormalization, LeakyReLU
-
-4:
-
-5: from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Layer
-
-6: from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-
-7: from keras.utils import plot_model, model_to_dot
-
-8: from tensorflow.keras.optimizers import Adam
-
-9: import numpy as np
-
-10: from sklearn.metrics import classification_report, confusion_matrix
-
-11: import cv2, os, collections
-
-12: import matplotlib.pyplot as plt
-
-13:
-
-14:
-
-15: LEAKY_MULTIPLYER = 0.05
-
-16: xdata = collections.defaultdict(list)
-
-17:
-
-18: for classes in \[0,1,2\]:
-
-19: ls = os.listdir(PATH+"train/"+str(classes))
-
-20: print(f"Processing images class: {classes}")
-
-21: for i, samples in enumerate(ls\[:1000\]):
-
-22:
-
-23: img = cv2.resize(cv2.imread(PATH+"train/"+str(classes)+'/'+samples),(112,112), interpolation = cv2.INTER_AREA)
-
-24:
-
-25:
-
-26: ___
-# convert from RGB color-space to YCrCb
-
-27: ycrcb_img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
-
-28:
-
-29: ___
-# equalize the histogram of the Y channel
-
-30: ycrcb_img\[:, :, 0\] = cv2.equalizeHist(ycrcb_img\[:, :, 0\])
-
-31:
-
-32: ___
-# convert back to RGB color-space from YCrCb
-
-33: equalized_img = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
-
-34:
-
-35: xdata\[classes\].append(equalized_img/255)
-
-36:
-
-37:
-
-38: def show_image_samples(gen ):
-
-39: plt.figure(figsize=(20, 20))
-
-40: for i in range(len(gen)):
-
-41: plt.subplot(5, 5, i + 1)
-
-42: image=gen\[i\]
-
-43: plt.imshow(image)
-
-44:
-
-45: plt.title('', color='blue', fontsize=14)
-
-46: plt.axis('off')
-
-47: plt.show()
-
-48:
-
-49:
-
-50:
-
-51: """concatenating all classes and their respective labels"""
-
-52: from sklearn.model_selection import train_test_split
-
-53:
-
-54: Y = \[0 for i in range(len(xdata\[0\]))\] + \[1 for i in range(len(xdata\[1\]))\] + \[2 for i in range(len(xdata\[2\]))\] #concatenating both y data
-
-55: X = xdata\[0\] + xdata\[1\] + xdata\[2\] #concatenating both x data
-
-56:
-
-57: len(X), len(Y)
-
-58: #sane length means correct processing
-
-59:
-
-60: X = np.array(X)
-
-61: Y = np.array(Y)
-
-62:
-
-63: X.shape, Y.shape
-
-64:
-
-65:
-
-66: xtrain, xtest, ytrain, ytest = train_test_split(X, Y, test_size=0.3, random_state=0, stratify=\[0\]\*1000+\[1\]\*1000+\[2\]\*1000)
-
-67: print(ytrain.ravel()\[:20\])
-
-68: print({i:ytest.tolist().count(i) for i in ytest.tolist()})
-
-69: print({i:ytrain.tolist().count(i) for i in ytrain.tolist()})
-
-70: print(xtrain\[0\].shape,xtrain\[0\].ravel()\[:20\].tolist())
-
-71: show_image_samples(xtrain\[:20\])
-
-72:
-
-73: del(X)
-
-74: del(Y)
-
-75: del(xdata)
-
-76:
-
-77: class BigResidual(Layer):
-
-78: def \__init_\_(self, channels_in,kernel,\*\*kwargs):
-
-79: super(BigResidual, self).\__init_\_(\*\*kwargs)
-
-80: self.channels_in = channels_in
-
-81: self.kernel = kernel
-
-82: self.depconv = DepthwiseConv2D(self.channels_in,self.kernel,padding="same")
-
-83: self.gap = GlobalAveragePooling2D()
-
-84: self.reshape = Reshape((1,1, self.channels_in))
-
-85: self.layer1=Conv2D( self.channels_in,self.kernel,padding="same")
-
-86: self.leak1=LeakyReLU(alpha=LEAKY_MULTIPLYER)
-
-87: self.layer2=Conv2D( self.channels_in,self.kernel,padding="same")
-
-88: self.leak2=LeakyReLU(alpha=LEAKY_MULTIPLYER)
-
-89: self.layer3=Conv2D( self.channels_in,self.kernel,padding="same")
-
-90: self.leak3=LeakyReLU(alpha=LEAKY_MULTIPLYER)
-
-91: self.layer4=Conv2D( self.channels_in,self.kernel,padding="same")
-
-92: self.leak4=LeakyReLU(alpha=LEAKY_MULTIPLYER)
-
-93: self.layer5=Add()
-
-94: self.layer6=LeakyReLU(alpha=LEAKY_MULTIPLYER)
-
-95: self.drop=Dropout(0.4)
-
-96: self.bn=BatchNormalization()
-
-97:
-
-98: def call(self, x):
-
-99: ___
-# the residual block using Keras functional API'
-
-100: first_layer = self.layer1(x)
-
-101: first_conv = self.leak2(self.layer2(first_layer))
-
-102: second_conv = self.leak3(self.layer3(first_conv))
-
-103: x = self.leak1(self.layer4(second_conv))
-
-104: residual = self.bn(self.layer5(\[x, first_layer, first_conv, second_conv\]))
-
-105: x = self.drop(self.layer6(residual))
-
-106: return x
-
-107:
-
-108: def compute_output_shape(self, input_shape):
-
-109: return input_shape
-
-110:
-
-111: model = Sequential()
-
-112: model.add(Conv2D(512, (1, 1), input_shape=(112, 112, 3)))
-
-113: model.add(MaxPooling2D(2,2))
-
-114: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-115:
-
-116: model.add(Conv2D(256, (1, 1)))
-
-117: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-118: model.add(BigResidual(256, (3,3)))
-
-119: model.add(MaxPooling2D(3,3))
-
-120:
-
-121: model.add(Conv2D(64, (1, 1)))
-
-122: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-123: model.add(BigResidual(64, (3,3)))
-
-124:
-
-125: model.add(Conv2D(32, (1, 1)))
-
-126: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-127: model.add(BigResidual(32, (3,3)))
-
-128:
-
-129: model.add(Flatten()) ___
-# this converts our 3D feature maps to 1D feature vectors
-
-130: model.add(Dense(64))
-
-131: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-132:
-
-133: model.add(Dropout(0.1))
-
-134: model.add(Dense(40))
-
-135: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-136:
-
-137: model.add(Dropout(0.1))
-
-138: model.add(Dense(30))
-
-139: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-140:
-
-141: model.add(Dropout(0.1))
-
-142: model.add(Dense(20))
-
-143: model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
-
-144: model.add(Dropout(0.5))
-
-145: model.add(Dense(3, activation='softmax'))
-
-146:
-
-147:
-
-148: model.compile(loss='sparse_categorical_crossentropy',
-
-149: optimizer=Adam(1e-05),
-
-150: metrics=\['accuracy'\])
-
-151: saving_weights=input('load weights?')
-
-152: if saving_weights == 'yes.':
-
-153: wsp=input('which?')
-
-154: model.load_weights(wsp)
-
-155:
-
-156: model.build((None, 112, 112, 3))
-
-157: print(model.summary())
-
-158: plot_model(model, show_shapes=True, show_layer_names=True, expand_nested=True, show_layer_activations=True, show_trainable=True)
-
-159:
-
-160: batch_size = 64
-
-161:
-
-162: ___
-# this is the augmentation configuration we will use for training
-
-163: h = model.fit(xtrain, ytrain, epochs=200,batch_size=32 #64
-
-164: ,validation_data = (xtest,ytest), shuffle=True)
-
-165:
-
-166:
-
-167:
-
-168: history = h
-
-169: plt.plot(history.history\['accuracy'\])
-
-170: ___
-# plotRegr(history, 'accuracy', plt)
-
-171: plt.plot(history.history\['val_accuracy'\])
-
-172: ___
-# plotRegr(history, 'val_accuracy', plt)
-
-173: plt.title('model accuracy')
-
-174: plt.ylabel('accuracy')
-
-175: plt.xlabel('epoch')
-
-176: plt.legend(\['train', 'val', 'rt', 'rv'\], loc='upper left')
-
-177: plt.show()
-
-178:
-
-179: plt.plot(history.history\['loss'\])
-
-180:
-
-181:
-
-182:
-
-183: ___
-# plotRegr(history, 'loss', plt)
-
-184: plt.plot(history.history\['val_loss'\])
-
-185: ___
-# plotRegr(history, 'val_loss', plt)
-
-186: plt.title('model loss')
-
-187: plt.ylabel('loss')
-
-188: plt.xlabel('epoch')
-
-189: plt.legend(\['train', 'val', 'r', 'r'\], loc='upper left')
-
-190: plt.show()
-
-191:
-
-192: ___
-# this is a generator that will read pictures found in
-
-193: ___
-# subfolers of 'data/train', and indefinitely generate
-
-194: ___
-# batches of augmented image data
-
-195:
-
-196:
-
-197:
-
-198:
-
-199: model.save_weights(f'{input("enter weights name")}.h5') ___
-# always save your weights after training or during training
-
-200:
-
-201: Y_pred = model.predict(xtest)
-
-202: y_pred = np.argmax(Y_pred, axis=1)
-
-203: print('Confusion Matrix')
-
-204: print(confusion_matrix(ytest, y_pred))
-
-205: print('Classification Report')
-
-206: target_names = \['h', 'd', 'dd'\]
-
-207: print(classification_report(ytest, y_pred, target_names=target_names))
+1:	PATH = '/kaggle/input/kneeoa/'
+2:	from tensorflow.keras.models import Sequential
+3:	from tensorflow.keras.layers import Conv2D, MaxPooling2D, Add, GlobalAveragePooling2D, Reshape, DepthwiseConv2D, BatchNormalization, LeakyReLU
+4:	
+5:	from tensorflow.keras.layers import Activation, Dropout, Flatten, Dense, Layer
+6:	from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+7:	from keras.utils import plot_model, model_to_dot
+8:	from tensorflow.keras.optimizers import Adam
+9:	import numpy as np
+10:	from sklearn.metrics import classification_report, confusion_matrix
+11:	import cv2, os, collections
+12:	import matplotlib.pyplot as plt
+13:	
+14:	
+15:	LEAKY_MULTIPLYER = 0.05
+16:	xdata = collections.defaultdict(list)
+17:	
+18:	for classes in [0,1,2]:
+19:	    ls =  os.listdir(PATH+"train/"+str(classes))
+20:	    print(f"Processing images class: {classes}")
+21:	    for i, samples in enumerate(ls[:1000]):
+22:	
+23:	        img = cv2.resize(cv2.imread(PATH+"train/"+str(classes)+'/'+samples),(112,112), interpolation = cv2.INTER_AREA)
+24:	
+25:	
+26:	        # convert from RGB color-space to YCrCb
+27:	        ycrcb_img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+28:	
+29:	        # equalize the histogram of the Y channel
+30:	        ycrcb_img[:, :, 0] = cv2.equalizeHist(ycrcb_img[:, :, 0])
+31:	
+32:	        # convert back to RGB color-space from YCrCb
+33:	        equalized_img = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
+34:	    
+35:	        xdata[classes].append(equalized_img/255)
+36:	
+37:	
+38:	def show_image_samples(gen ):
+39:	    plt.figure(figsize=(20, 20))
+40:	    for i in range(len(gen)):
+41:	        plt.subplot(5, 5, i + 1)
+42:	        image=gen[i]
+43:	        plt.imshow(image)
+44:	
+45:	        plt.title('', color='blue', fontsize=14)
+46:	        plt.axis('off')
+47:	    plt.show()
+48:	
+49:	
+50:	
+51:	"""concatenating all classes and their respective labels"""
+52:	from sklearn.model_selection import train_test_split
+53:	
+54:	Y = [0 for i in range(len(xdata[0]))] + [1 for i in range(len(xdata[1]))] + [2 for i in range(len(xdata[2]))] #concatenating both y data
+55:	X = xdata[0] + xdata[1] + xdata[2] #concatenating both x data
+56:	
+57:	len(X), len(Y)
+58:	#sane length means correct processing
+59:	
+60:	X = np.array(X)
+61:	Y = np.array(Y)
+62:	
+63:	X.shape, Y.shape
+64:	
+65:	
+66:	xtrain, xtest, ytrain, ytest = train_test_split(X, Y, test_size=0.3, random_state=0, stratify=[0]*1000+[1]*1000+[2]*1000)
+67:	print(ytrain.ravel()[:20])
+68:	print({i:ytest.tolist().count(i) for i in ytest.tolist()})
+69:	print({i:ytrain.tolist().count(i) for i in ytrain.tolist()})
+70:	print(xtrain[0].shape,xtrain[0].ravel()[:20].tolist())
+71:	show_image_samples(xtrain[:20])
+72:	
+73:	del(X)
+74:	del(Y)
+75:	del(xdata)
+76:	
+77:	class BigResidual(Layer):
+78:	    def __init__(self, channels_in,kernel,**kwargs):
+79:	        super(BigResidual, self).__init__(**kwargs)
+80:	        self.channels_in = channels_in
+81:	        self.kernel = kernel
+82:	        self.depconv = DepthwiseConv2D(self.channels_in,self.kernel,padding="same")
+83:	        self.gap = GlobalAveragePooling2D()
+84:	        self.reshape = Reshape((1,1, self.channels_in))
+85:	        self.layer1=Conv2D( self.channels_in,self.kernel,padding="same")
+86:	        self.leak1=LeakyReLU(alpha=LEAKY_MULTIPLYER)
+87:	        self.layer2=Conv2D( self.channels_in,self.kernel,padding="same")
+88:	        self.leak2=LeakyReLU(alpha=LEAKY_MULTIPLYER)
+89:	        self.layer3=Conv2D( self.channels_in,self.kernel,padding="same")
+90:	        self.leak3=LeakyReLU(alpha=LEAKY_MULTIPLYER)
+91:	        self.layer4=Conv2D( self.channels_in,self.kernel,padding="same")
+92:	        self.leak4=LeakyReLU(alpha=LEAKY_MULTIPLYER)
+93:	        self.layer5=Add()
+94:	        self.layer6=LeakyReLU(alpha=LEAKY_MULTIPLYER)
+95:	        self.drop=Dropout(0.4)
+96:	        self.bn=BatchNormalization()
+97:	
+98:	    def call(self, x):
+99:	        # the residual block using Keras functional API'
+100:	        first_layer = self.layer1(x)
+101:	        first_conv = self.leak2(self.layer2(first_layer))
+102:	        second_conv = self.leak3(self.layer3(first_conv))
+103:	        x = self.leak1(self.layer4(second_conv))
+104:	        residual = self.bn(self.layer5([x, first_layer, first_conv, second_conv]))
+105:	        x = self.drop(self.layer6(residual))
+106:	        return x
+107:	
+108:	    def compute_output_shape(self, input_shape):
+109:	        return input_shape
+110:	
+111:	model = Sequential()
+112:	model.add(Conv2D(512, (1, 1), input_shape=(112, 112, 3)))
+113:	model.add(MaxPooling2D(2,2))
+114:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+115:	
+116:	model.add(Conv2D(256, (1, 1)))
+117:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+118:	model.add(BigResidual(256, (3,3)))
+119:	model.add(MaxPooling2D(3,3))
+120:	
+121:	model.add(Conv2D(64, (1, 1)))
+122:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+123:	model.add(BigResidual(64, (3,3)))
+124:	
+125:	model.add(Conv2D(32, (1, 1)))
+126:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+127:	model.add(BigResidual(32, (3,3)))
+128:	
+129:	model.add(Flatten())  # this converts our 3D feature maps to 1D feature vectors
+130:	model.add(Dense(64))
+131:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+132:	
+133:	model.add(Dropout(0.1))
+134:	model.add(Dense(40))
+135:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+136:	
+137:	model.add(Dropout(0.1))
+138:	model.add(Dense(30))
+139:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+140:	
+141:	model.add(Dropout(0.1))
+142:	model.add(Dense(20))
+143:	model.add(LeakyReLU(alpha=LEAKY_MULTIPLYER))
+144:	model.add(Dropout(0.5))
+145:	model.add(Dense(3, activation='softmax'))
+146:	
+147:	
+148:	model.compile(loss='sparse_categorical_crossentropy',
+149:	              optimizer=Adam(1e-05),
+150:	              metrics=['accuracy'])
+151:	saving_weights=input('load weights?')
+152:	if saving_weights == 'yes.':
+153:	    wsp=input('which?')
+154:	    model.load_weights(wsp)
+155:	
+156:	model.build((None, 112, 112, 3))
+157:	print(model.summary())
+158:	plot_model(model,  show_shapes=True, show_layer_names=True, expand_nested=True, show_layer_activations=True, show_trainable=True)
+159:	
+160:	batch_size = 64
+161:	
+162:	# this is the augmentation configuration we will use for training
+163:	h = model.fit(xtrain, ytrain, epochs=200,batch_size=32 #64
+164:	          ,validation_data = (xtest,ytest), shuffle=True)
+165:	
+166:	
+167:	
+168:	history = h
+169:	plt.plot(history.history['accuracy'])
+170:	# plotRegr(history, 'accuracy', plt)
+171:	plt.plot(history.history['val_accuracy'])
+172:	# plotRegr(history, 'val_accuracy', plt)
+173:	plt.title('model accuracy')
+174:	plt.ylabel('accuracy')
+175:	plt.xlabel('epoch')
+176:	plt.legend(['train',  'val', 'rt', 'rv'], loc='upper left')
+177:	plt.show()
+178:	
+179:	plt.plot(history.history['loss'])
+180:	
+181:	
+182:	
+183:	# plotRegr(history, 'loss', plt)
+184:	plt.plot(history.history['val_loss'])
+185:	# plotRegr(history, 'val_loss', plt)
+186:	plt.title('model loss')
+187:	plt.ylabel('loss')
+188:	plt.xlabel('epoch')
+189:	plt.legend(['train', 'val', 'r', 'r'], loc='upper left')
+190:	plt.show()
+191:	
+192:	# this is a generator that will read pictures found in
+193:	# subfolers of 'data/train', and indefinitely generate
+194:	# batches of augmented image data
+195:	
+196:	
+197:	
+198:	
+199:	model.save_weights(f'{input("enter weights name")}.h5')  # always save your weights after training or during training
+200:	
+201:	Y_pred = model.predict(xtest)
+202:	y_pred = np.argmax(Y_pred, axis=1)
+203:	print('Confusion Matrix')
+204:	print(confusion_matrix(ytest, y_pred))
+205:	print('Classification Report')
+206:	target_names = ['h', 'd', 'dd']
+207:	print(classification_report(ytest, y_pred, target_names=target_names))
 ~~~
