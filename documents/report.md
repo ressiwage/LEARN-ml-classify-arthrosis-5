@@ -1,10 +1,12 @@
-# Введение
+___
+#Введение
 
 В наше время наблюдается стремительный рост технологий с применением искусственного интеллекта, под которым часто подразумевают нейронные сети. Во многом это обусловлено тем, что нейронные сети, будучи симуляцией нейронов органического мозга, позволяют решать нетривиальные задачи, неподвластные человеку, например постановка диагноза по рентген снимку, предсказание курса акций на бирже, генерация изображений и т.д.
 
 Ввиду востребованности данной технологии была выбрана тема «разработка системы диагностики артроза по рентген снимкам коленного сустава».
 
-# Анализ предметной области
+___
+#Анализ предметной области
 
 в данной главе осуществляется анализ предметной области, перечисляются существующие решения, а также ведётся обзор технологий для реализации сервиса.
 
@@ -97,7 +99,8 @@
 2. Проект должен возвращать области, в которых предположительно локализованы патологии;
 3. Проект должен иметь понятный интерфейс.
 
-# Проектирование
+___
+#Проектирование
 
 В этой главе будет производиться проектирование сервиса и его интерфейса.
 
@@ -115,7 +118,8 @@
 
 Рисунок 4 – будущий интерфейс
 
-# Реализация информационной системы
+___
+#Реализация информационной системы
 
 В данной главе будет описано получившееся приложение и его архитектура.
 
@@ -294,7 +298,8 @@
 
 В результате курсовой работы были получены навыки работы с машинным обучением, также был создан рабочий прототип для классификации степени артроза. Исходный код может быть найден в репозитории <https://github.com/ressiwage/LEARN-ml-classify-arthrosis>.
 
-# Список литературы
+___
+#Список литературы
 
 1. Xception: компактная глубокая нейронная сеть – \[Электронный ресурс\]. – URL: <https://habr.com/ru/articles/347564/>;
 2. Trask, Andrew. "Grokking Deep Learning" (2019): 1-336;
@@ -358,19 +363,22 @@
 
 25:
 
-26: # convert from RGB color-space to YCrCb
+26: ___
+#convert from RGB color-space to YCrCb
 
 27: ycrcb_img = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 
 28:
 
-29: # equalize the histogram of the Y channel
+29: ___
+#equalize the histogram of the Y channel
 
 30: ycrcb_img\[:, :, 0\] = cv2.equalizeHist(ycrcb_img\[:, :, 0\])
 
 31:
 
-32: # convert back to RGB color-space from YCrCb
+32: ___
+#convert back to RGB color-space from YCrCb
 
 33: equalized_img = cv2.cvtColor(ycrcb_img, cv2.COLOR_YCrCb2BGR)
 
@@ -504,7 +512,8 @@
 
 98: def call(self, x):
 
-99: # the residual block using Keras functional API'
+99: ___
+#the residual block using Keras functional API'
 
 100: first_layer = self.layer1(x)
 
@@ -564,7 +573,8 @@
 
 128:
 
-129: model.add(Flatten()) # this converts our 3D feature maps to 1D feature vectors
+129: model.add(Flatten()) ___
+#this converts our 3D feature maps to 1D feature vectors
 
 130: model.add(Dense(64))
 
@@ -630,7 +640,8 @@
 
 161:
 
-162: # this is the augmentation configuration we will use for training
+162: ___
+#this is the augmentation configuration we will use for training
 
 163: h = model.fit(xtrain, ytrain, epochs=200,batch_size=32 #64
 
@@ -646,11 +657,13 @@
 
 169: plt.plot(history.history\['accuracy'\])
 
-170: # plotRegr(history, 'accuracy', plt)
+170: ___
+#plotRegr(history, 'accuracy', plt)
 
 171: plt.plot(history.history\['val_accuracy'\])
 
-172: # plotRegr(history, 'val_accuracy', plt)
+172: ___
+#plotRegr(history, 'val_accuracy', plt)
 
 173: plt.title('model accuracy')
 
@@ -672,11 +685,13 @@
 
 182:
 
-183: # plotRegr(history, 'loss', plt)
+183: ___
+#plotRegr(history, 'loss', plt)
 
 184: plt.plot(history.history\['val_loss'\])
 
-185: # plotRegr(history, 'val_loss', plt)
+185: ___
+#plotRegr(history, 'val_loss', plt)
 
 186: plt.title('model loss')
 
@@ -690,11 +705,14 @@
 
 191:
 
-192: # this is a generator that will read pictures found in
+192: ___
+#this is a generator that will read pictures found in
 
-193: # subfolers of 'data/train', and indefinitely generate
+193: ___
+#subfolers of 'data/train', and indefinitely generate
 
-194: # batches of augmented image data
+194: ___
+#batches of augmented image data
 
 195:
 
@@ -704,7 +722,8 @@
 
 198:
 
-199: model.save_weights(f'{input("enter weights name")}.h5') # always save your weights after training or during training
+199: model.save_weights(f'{input("enter weights name")}.h5') ___
+#always save your weights after training or during training
 
 200:
 
