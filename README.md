@@ -17,6 +17,9 @@
 4. python setup.py
 5. .\run.ps1
 
+# структура
+на данный момент проект находится в папке backend, в будущем будет перенесён в корень
+
 # использованный датасет
 https://www.kaggle.com/datasets/tommyngx/kneeoa
 
