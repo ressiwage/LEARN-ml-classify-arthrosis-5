@@ -10,6 +10,15 @@
 
 На данный момент вы можете [посмотреть отчёт в md](documents/report.md) или [скачать в docx](documents/отчёт%202024.docx).
 
+# установка и запуск
+1. установите python 3.10
+2. <путь до python.exe> -m pip install -r <путь до проекта>/backend/requirements.txt
+3. cd <путь до проекта>/backend
+4. .\run.ps1
+
+# использованный датасет
+https://www.kaggle.com/datasets/tommyngx/kneeoa
+
 ### роадмап
 1. ~~разработка сети~~
 2. ~~разработка сервиса обёртки~~
