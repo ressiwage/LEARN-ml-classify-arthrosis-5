@@ -14,7 +14,8 @@
 1. установите python 3.10
 2. <путь до python.exe> -m pip install -r <путь до проекта>/backend/requirements.txt
 3. cd <путь до проекта>/backend
-4. .\run.ps1
+4. python setup.py
+5. .\run.ps1
 
 # использованный датасет
 https://www.kaggle.com/datasets/tommyngx/kneeoa
