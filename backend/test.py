@@ -105,6 +105,13 @@ y_pred=np.argmax(Y_pred, axis=1)
 #Generate the confusion matrix
 cf_matrix = confusion_matrix(ytest, y_pred)
 
+FP = cf_matrix.sum(axis=0) - np.diag(cf_matrix)  
+FN = cf_matrix.sum(axis=1) - np.diag(cf_matrix)
+TP = np.diag(cf_matrix)
+TN = cf_matrix.sum() - (FP + FN + TP)
+print(f"tp {TP} fn {FN} tp {TP} tn {TN}")
+
+
 fig, ax = plt.subplots(figsize=(10,8))  
 ax = sns.heatmap(cf_matrix, annot=True, cmap='Blues')
 
